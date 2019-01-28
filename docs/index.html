@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>LoungeBot</title>
+        <link href="./style.css" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+
+    <body>
+        <div class="mainContainer">
+            <h1>LoungeBot</h1>
+            <center><h2><a href="https://discordapp.com/api/oauth2/authorize?client_id=539007807295324166&permissions=0&scope=bot" target="_blank">Invite  </a><a href="https://github.com/EliotChignell/LoungeBot" target="_blank">GitHub</a></h2></center>
+            <hr>
+
+            <div class="commands">
+                <h2>Commands</h2>
+                <hr class="minihr">
+            </div>
+
+            <div class="games">
+                <hr>
+                <h2>Games</h2>
+                <hr class="minihr">
+            </div>
+
+        </div>
+
+        <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+
+        <script>
+            let commands = document.querySelector('.commands');
+            var help = $.getJSON('https://api.myjson.com/bins/lounge', data => {
+            for (var i in data) {
+                commands.innerHTML += "<h4>"+data[i].usage+"</h4>"+"<p>"+data[i].description+"</p>";
+            }
+            document.body.innerHTML += "<h2>Settings</h2><h4>ch settings prefix [prefix] OR ch settings prefix default</h4><p>Change the prefix</p>";
+            });
+        </script>
+    </body>
+</html>

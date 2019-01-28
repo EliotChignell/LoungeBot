@@ -1,0 +1,12 @@
+{
+    "help": {
+        "names": ["Help","help"],
+        "description": "This command tells you the available commands/games that you can use/play.",
+        "usage": "l;help"
+    },
+    "ping": {
+        "names": ["Ping","ping"],
+        "description": "This commands tells you your ping.",
+        "usage": "l;ping"
+    }
+}

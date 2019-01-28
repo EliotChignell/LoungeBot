@@ -2,3 +2,57 @@
     font-family: "SFCompactDisplay-Medium";
     src: url("./SFCompactDisplay-Medium.otf");
 }
+
+* {
+    font-family: "SFCompactDisplay-Medium", -apple-system, BlinkMacSystemFont, Arial;
+}
+
+html {
+    min-height: 100%;
+    background-repeat:no-repeat;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-image: linear-gradient(to bottom right, purple, deepskyblue);
+}
+
+
+.mainContainer {
+    width: 75%;
+    height: 100%;
+
+    position:absolute;
+    left:0; right:0;
+    top:0; bottom:0;
+    margin: auto;
+
+    max-width:100%;
+    max-height:100%;
+    overflow:auto;
+    border-left: 2px solid white;
+    border-right: 2px solid white;
+}
+
+.commands {
+    text-align: center;
+}
+
+.games {
+    text-align: center;
+}
+
+.minihr {
+    width: 75%;
+    text-align: center;
+}
+
+a {
+    text-decoration: none;
+    text-align: center;
+    color: deepskyblue;
+}
+
+h1 {
+    text-align: center;
+}

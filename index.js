@@ -3,10 +3,15 @@
 // Libraries
 const Discord = require("discord.js");
 const Enmap = require("enmap");
+const MyJSONAPI = require('myjson-api');
 
 // JSON files
 const secrets = require("./secrets.json");
 const nouns = require('./docs/wordLists/nouns.json');
+const help = require('./docs/help.json');
+
+// Uploading help.json
+MyJSONAPI.update('lounge', require('./docs/help.json'));
 
 // Enmaps
 let games = {
@@ -33,7 +38,11 @@ client.once("ready", () => {
 });
 
 client.on('message', async message => {
+  
   if (!message.content.startsWith(prefix) || message.author.bot || !message.guild) return;
+
+  // Uploading help.json
+  MyJSONAPI.update('lounge', require('./docs/help.json'));
 
   client.points.ensure(message.author.id, {
     id: message.author.id,
