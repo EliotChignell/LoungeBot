@@ -33,7 +33,7 @@
 
         <script>
             let commands = document.querySelector('.commands');
-            var help = $.getJSON('https://api.myjson.com/bins/lounge', data => {
+            var help = $.getJSON('https://api.myjson.com/bins/1d3p5k', data => {
             for (var i in data) {
                 commands.innerHTML += "<h4>"+data[i].usage+"</h4>"+"<p>"+data[i].description+"</p>";
             }
