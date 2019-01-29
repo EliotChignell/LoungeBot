@@ -11,7 +11,7 @@ const nouns = require('./docs/wordLists/nouns.json');
 const help = require('./docs/help.json');
 
 // Uploading help.json
-MyJSONAPI.update('lounge', require('./docs/help.json'));
+MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
 
 // Enmaps
 let games = {
@@ -43,7 +43,7 @@ client.on('message', async message => {
   if (!message.content.startsWith(prefix) || message.author.bot || !message.guild) return;
 
   // Uploading help.json
-  MyJSONAPI.update('lounge', require('./docs/help.json'));
+  MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
 
   client.points.ensure(message.author.id, {
     id: message.author.id,
