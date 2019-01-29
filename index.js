@@ -34,7 +34,8 @@ const client = new Discord.Client();
 client.points = new Enmap({name: "points"});
 
 client.once("ready", () => {
-  console.log("Ready!");	
+  console.log("Ready!");
+  client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
 });
 
 client.on('message', async message => {
@@ -81,7 +82,7 @@ client.on('message', async message => {
     case 'help':
       sendEmbed = true;
       eTitle = "Help";
-      eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\n  help ping uptime\n\nGames\n  'Hangman': l;hangman start```";
+      eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\n  help ping uptime bal\n\nGames\n  'Hangman': l;hangman start```";
       break;
 
     case "uptime":
