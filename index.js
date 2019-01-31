@@ -19,6 +19,8 @@ let games = {
   hangman: new Enmap({name:"hangman"})
 };
 
+let other = new Enmap({name:"other"});
+
 // Prefix 
 const prefix = "l;";
 
@@ -42,9 +44,11 @@ client.once("ready", () => {
 client.on('message', async message => {
   
   if (!message.content.startsWith(prefix) || message.author.bot || !message.guild) return;
+  if (client.points.get("rewarded")) client.points.delete("rewarded");
+
+  if (!other.get("rewarded")) other.set("rewarded", []);
 
   if (message.guild.me.hasPermission("MANAGE_NICKNAMES")) message.guild.me.setNickname('');
-  if (!client.points.get("rewarded")) client.points.set("rewarded",[]);
 
   // Uploading help.json
   MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
@@ -137,12 +141,13 @@ client.on('message', async message => {
       };
 
       request(options, (e,r,b) => {
-        console.log(client.points.get("rewarded"));
-        if (b.voted == 0 && client.points.get("rewarded").includes(message.author.id)) client.points.remove("rewarded", message.author.id);
-        if (b.voted == 1 && !client.points.get("rewarded").includes(message.author.id)) {
+        console.log(other.get("rewarded"));
+        console.log(b);
+        if (b.voted == 0 && other.get("rewarded").includes(message.author.id)) other.remove("rewarded", message.author.id);
+        if (b.voted == 1 && !other.get("rewarded").includes(message.author.id)) {
           let rewardedCredits = 250+Math.floor(client.points.get(message.author.id, "points")/10);
           client.points.math(message.author.id, "+", rewardedCredits, "points");
-          client.points.push("rewarded", message.author.id);
+          other.push("rewarded", message.author.id);
           embed = new Discord.RichEmbed()
             .setTitle('Thanks for voting!')
             .setAuthor("LoungeBot",client.user.displayAvatarURL)
@@ -162,6 +167,7 @@ client.on('message', async message => {
 
       if (args[0] || !message.guild) {
         let sorted = client.points.array().sort((a, b) => a.points - b.points).reverse().splice(0,10);
+        console.log(sorted);
         sendEmbed = false;
         let rDescription = "The Worldwide Top 10:```diff\n";
         /*for (const data of sorted) {
