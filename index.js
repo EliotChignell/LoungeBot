@@ -197,7 +197,7 @@ client.on('message', async message => {
         for (const data of sorted) {
           rDescription += "\n- "+client.users.get(data.id).tag+"\n+ "+data.points+" credits";
         }
-        rDescription += '```\nType `ch board world` to find out the worldwide standings.';
+        rDescription += '```\nType `l;board world` to find out the worldwide standings.';
         sendEmbed = false;
         embed = new Discord.RichEmbed()
           .setTitle("Credits Leaderboard")
