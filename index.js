@@ -209,6 +209,12 @@ client.on('message', async message => {
         message.channel.send(embed);
       }
       break;
+
+    case 'info':
+      sendEmbed = true;
+      eTitle = "Information about LoungeBot";
+      eDescription = "This bot is:\nRunning on `"+client.guilds.size+"` servers,\nServing "+client.users.size+" users,\nAnd listening on `"+client.channels.size+"` channels.";
+      break;
   
 
     // Games
@@ -309,7 +315,7 @@ client.on('message', async message => {
     let embed = new Discord.RichEmbed()
       .setTitle(eTitle)
       .setAuthor("LoungeBot",client.user.displayAvatarURL)
-      .setColor(0x8E44AD)
+      .setColor(0x363A3F)
       .setDescription(eDescription)
       .setFooter("l;[command]")
       .setImage(eImage)
