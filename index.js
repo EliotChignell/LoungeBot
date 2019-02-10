@@ -109,7 +109,7 @@ client.on('message', async message => {
       } else if (!args[0]) {
         sendEmbed = true;
         eTitle = "Help";
-        eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\nhelp ping uptime bal board vote reward\n\nGames\n'Hangman': l;hangman start\n'Whos that Pokémon': l;pokemon```";
+        eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\nhelp ping uptime bal board invite vote reward\n\nGames\n'Hangman': l;hangman start\n'Whos that Pokémon': l;pokemon```";
       }
       
       break;
@@ -237,6 +237,9 @@ client.on('message', async message => {
       eDescription = "This bot is:\nRunning on `"+client.guilds.size+"` servers,\nServing "+client.users.size+" users,\nAnd listening on `"+client.channels.size+"` channels.";
       break;
   
+    case 'invite':
+      message.channel.send('https://discordapp.com/oauth2/authorize?client_id=442184461405126656&permissions=469762048&scope=bot');
+      break;
 
     // Games
     case 'hangman':
