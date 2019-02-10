@@ -5,6 +5,10 @@ const Discord = require("discord.js");
 const Enmap = require("enmap");
 const MyJSONAPI = require('myjson-api');
 const request = require('request');
+const pokedexPromiseV2 = require('pokedex-promise-v2');
+
+// Pokedex
+let pokedex = new pokedexPromiseV2();
 
 // JSON files
 const secrets = require("./secrets.json");
@@ -16,7 +20,8 @@ MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
 
 // Enmaps
 let games = {
-  hangman: new Enmap({name:"hangman"})
+  hangman: new Enmap({name:"hangman"}),
+  pokemon: new Enmap({name:"pokemon"})
 };
 
 let other = new Enmap({name:"other"});
@@ -31,6 +36,7 @@ function msToTime2(e){parseInt(e%1e3/100);var n=parseInt(e/1e3%60),r=parseInt(e/
 
 // Other variables
 const letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+let clientReady = false;
 
 // Client
 const client = new Discord.Client();
@@ -38,6 +44,7 @@ client.points = new Enmap({name: "points"});
 
 client.once("ready", () => {
   console.log("Ready!");
+  clientReady = true;
   client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
 });
 
@@ -88,9 +95,23 @@ client.on('message', async message => {
 
     // Utility Commands
     case 'help':
-      sendEmbed = true;
-      eTitle = "Help";
-      eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\nhelp ping uptime bal board vote reward\n\nGames\n'Hangman': l;hangman start```";
+      if (args[0]) {
+        for (var i in help) {
+          help[i].names.forEach(element => {
+            if (args[0].toLowerCase() == element) {
+              sendEmbed = true;
+              eTitle = "Help information on the command "+help[i].names[0];
+              eDescription = "Description: ```"+help[i].description+"```\n\
+                              Usage: ```"+help[i].usage+"```";
+            }
+          });
+        }
+      } else if (!args[0]) {
+        sendEmbed = true;
+        eTitle = "Help";
+        eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\nhelp ping uptime bal board vote reward\n\nGames\n'Hangman': l;hangman start\n'Whos that Pokémon': l;pokemon```";
+      }
+      
       break;
 
     case "uptime":
@@ -304,6 +325,49 @@ client.on('message', async message => {
       }
       break;
 
+    
+    case 'pokemon':
+    case 'pokémon':
+    case 'poke':
+      if (!args[0]) {
+        pokedex.getPokemonByName(randInt(1,807), function(response, error) { // with callback
+          if(!error) {
+            games.pokemon.set(message.author.id, response.species.name);
+            
+            sendEmbed = false;
+            embed = new Discord.RichEmbed()
+              .setTitle("Who's That Pokémon, "+message.author.username+"?")
+              .setAuthor("LoungeBot",client.user.displayAvatarURL)
+              .setColor(0x363A3F)
+              .setDescription("Guess by typing `l;pokemon [name]`.")
+              .setFooter("l;[command]")
+              .setImage(response.sprites.front_default)
+              .setTimestamp();
+            message.channel.send(embed);
+
+          } else {
+            console.log(error)
+          }
+        });
+      } else if (args[0]) {
+        let name = games.pokemon.get(message.author.id);
+        if (name == "dead") return message.channel.send("Please start a game using `l;pokemon`");
+        if (args[0].toLowerCase() == name) { // yes
+          let credsEarned = Math.floor(100+randInt(1,name.length));
+          client.points.math(message.author.id, "+", credsEarned, "points");
+          sendEmbed = true;
+          eTitle = "Who's that Pokémon, "+message.author.username+"?";
+          eDescription = "Good Job!\nYou recieved "+credsEarned+" credits!";
+        } else if (args[0].toLowerCase() != name) { // no
+          games.pokemon.set(message.author.id, "dead");
+          sendEmbed = true;
+          eTitle = "You were incorrect, "+message.author.username+"!";
+          eDescription = "oof\nThe Pokémon was: `"+name+"`";
+        }
+      }
+      break;
+    
+
     default:
       sendEmbed = true;
       eTitle = "Command not found";
@@ -325,5 +389,9 @@ client.on('message', async message => {
   }
 
 });
+
+setInterval(() => {
+  if (clientReady) client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
+}, 20000);
 
 client.login(secrets.token);

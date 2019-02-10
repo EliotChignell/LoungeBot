@@ -8,5 +8,25 @@
         "names": ["Ping","ping"],
         "description": "This commands tells you your ping.",
         "usage": "l;ping"
+    },
+    "uptime": {
+        "names": ["Uptime","uptime"],
+        "description": "This command tells you how long the current session of LoungeBot has been online for. It's usually a day at most as I am constantly working on it.",
+        "usage": "l;uptime"
+    },
+    "bal": {
+        "names": ["Balance","balance","bal","credits"],
+        "description": "This command simply shows you your balance. Type 'l;bal @user#1234' to find out the balance of another user.",
+        "usage": "l;bal OR l;bal @user#1234"
+    },
+    "board": {
+        "names": ["Leaderboard","leaderboard","board"],
+        "description": "This command tells you the leaderboard for your server. Type 'l;board global' to find out the global standings.",
+        "usage": "l;board OR l;board global"
+    },
+    "vote": {
+        "names": ["Vote","vote"],
+        "description": "This command gives you the link to vote for this bot. :)",
+        "usage": "l;vote"
     }
 }
