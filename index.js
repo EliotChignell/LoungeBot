@@ -6,6 +6,7 @@ const Enmap = require("enmap");
 const MyJSONAPI = require('myjson-api');
 const request = require('request');
 const pokedexPromiseV2 = require('pokedex-promise-v2');
+const DiscordBotList = require('dblapi.js');
 
 // Pokedex
 let pokedex = new pokedexPromiseV2();
@@ -14,6 +15,9 @@ let pokedex = new pokedexPromiseV2();
 const secrets = require("./secrets.json");
 const nouns = require('./docs/wordLists/nouns.json');
 const help = require('./docs/help.json');
+
+// dbl
+const dbl = new DiscordBotList(secrets.dbl);
 
 // Uploading help.json
 MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
@@ -152,35 +156,6 @@ client.on('message', async message => {
 
     case 'reward':
 
-      var options = {                 
-        method: 'GET',             
-        uri: 'https://discordbots.org/api/bots/442184461405126656/check?userId='+message.author.id,
-        json: true,                   
-        headers: {               
-          'Authorization': secrets.dbl                  
-        }
-      };
-
-      request(options, (e,r,b) => {
-        console.log(other.get("rewarded"));
-        console.log(b);
-        if (b.voted == 0 && other.get("rewarded").includes(message.author.id)) other.remove("rewarded", message.author.id);
-        if (b.voted == 1 && !other.get("rewarded").includes(message.author.id)) {
-          let rewardedCredits = 250+Math.floor(client.points.get(message.author.id, "points")/10);
-          client.points.math(message.author.id, "+", rewardedCredits, "points");
-          other.push("rewarded", message.author.id);
-          embed = new Discord.RichEmbed()
-            .setTitle('Thanks for voting!')
-            .setAuthor("LoungeBot",client.user.displayAvatarURL)
-            .setColor(0xff8300)
-            .setDescription("Make sure to vote every day to get rewards!\nYou recieved "+rewardedCredits+" credits!")
-            .setFooter("l;[command]")
-            .setTimestamp();
-            message.author.send(embed);
-        } else if (b.voted == 0) {
-          message.channel.send("You have not voted!");
-        }
-      });
       break;
     
     case 'leaderboard':
@@ -201,7 +176,7 @@ client.on('message', async message => {
         embed = new Discord.RichEmbed()
           .setTitle("Credits Leaderboard")
           .setAuthor("LoungeBot",client.user.displayAvatarURL)
-          .setColor(0xff8300)
+          .setColor(0x8E44AD)
           .setDescription(rDescription)
           .setFooter("l;[command]")
           .setTimestamp();
@@ -223,7 +198,7 @@ client.on('message', async message => {
         embed = new Discord.RichEmbed()
           .setTitle("Credits Leaderboard")
           .setAuthor("LoungeBot",client.user.displayAvatarURL)
-          .setColor(0xff8300)
+          .setColor(0x8E44AD)
           .setDescription(rDescription)
           .setFooter("l;[command]")
           .setTimestamp();
@@ -341,7 +316,7 @@ client.on('message', async message => {
             embed = new Discord.RichEmbed()
               .setTitle("Who's That Pokémon, "+message.author.username+"?")
               .setAuthor("LoungeBot",client.user.displayAvatarURL)
-              .setColor(0x363A3F)
+              .setColor(0x8E44AD)
               .setDescription("Guess by typing `l;pokemon [name]`.")
               .setFooter("l;[command]")
               .setImage(response.sprites.front_default)
@@ -382,7 +357,7 @@ client.on('message', async message => {
     let embed = new Discord.RichEmbed()
       .setTitle(eTitle)
       .setAuthor("LoungeBot",client.user.displayAvatarURL)
-      .setColor(0x363A3F)
+      .setColor(0x8E44AD)
       .setDescription(eDescription)
       .setFooter("l;[command]")
       .setImage(eImage)
@@ -395,6 +370,7 @@ client.on('message', async message => {
 
 setInterval(() => {
   if (clientReady) client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
+  dbl.postStats(client.guilds.size);
 }, 20000);
 
 client.login(secrets.token);
