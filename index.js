@@ -25,7 +25,8 @@ MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
 // Enmaps
 let games = {
   hangman: new Enmap({name:"hangman"}),
-  pokemon: new Enmap({name:"pokemon"})
+  pokemon: new Enmap({name:"pokemon"}),
+  tictactoe: new Enmap({name:"tictactoe"})
 };
 
 let other = new Enmap({name:"other"});
@@ -218,6 +219,8 @@ client.on('message', async message => {
 
     // Games
     case 'hangman':
+    case 'hang':
+    case 'hm':
       if (!args[0] || args[0] == "start") { // Starting
 
         // Setting the useful variables in the enmap
@@ -345,7 +348,21 @@ client.on('message', async message => {
       }
       break;
     
+    /*
+    case 'tictactoe':
+      if (!args[0] || !message.mentions.users.first()) return message.channel.send("Please mention someone to challenge, e.g. `l;tictactoe @chig#4519`");
+      user = message.mentions.users.first();
 
+      tictactoe.set(message.author.id+" "+user.id, {
+        players: [message.author.id, user.id],
+        currentPlayer: message.author.id,
+        confirmed: false,
+        board: [0,0,0,0,0,0,0,0,0]
+      });
+
+      break;
+    */
+    
     default:
       sendEmbed = true;
       eTitle = "Command not found";

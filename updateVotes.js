@@ -16,6 +16,8 @@ client.once('ready', () => {
 
 client.on('message', message => {
 
+  if (!message.content.startsWith("l;")) return;
+
   votes.ensure(message.author.id, {
     id: message.author.id,
     voted: false,
