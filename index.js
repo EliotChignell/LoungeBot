@@ -158,6 +158,29 @@ client.on('message', async message => {
     case 'reward':
 
       break;
+
+    case 'yt':
+      request({
+      	uri: 'https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UC-lHJZR3Gqxm24_Vd_AJ5Yw&key='+secrets.youtube,
+      	json: true
+      }, (e,r,b) => {
+      	let pewds = parseInt(b.items[0].statistics.subscriberCount);
+      	console.log(pewds);
+      	request({ // UCq-Fj5jknLsUf-MWSy4_brA
+      	  uri: 'https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UCq-Fj5jknLsUf-MWSy4_brA&key='+secrets.youtube,
+      	  json: true
+      	}, (e,r,b) => {
+      		let tseries = parseInt(b.items[0].statistics.subscriberCount);
+      		console.log(tseries);
+      		sendEmbed = false;
+      		if (pewds > tseries) {
+      			return message.channel.send("PewDiePie is ahead by "+pewds-tseries+" subscribers");
+      		} else if (tseries > pewds) {
+      			return message.channel.send("T-Series is ahead by "+tseries-pewds+" subscribers");
+      		}
+      	})
+      });
+      break;
     
     case 'leaderboard':
     case 'board':
