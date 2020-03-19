@@ -250,8 +250,8 @@ client.on('message', async message => {
         let randomInteger = randInt(0,nouns.nouns.length);
         games.hangman.set(message.author.id, {
           "inGame": true,
-          "word": nouns.nouns[randomInteger].split(''),
-          "nonDuplicates": nouns.nouns[randomInteger].split('').filter((item, pos, self) => {return self.indexOf(item) == pos}),
+          "word": nouns.nouns[randomInteger].toLowerCase().split(''),
+          "nonDuplicates": nouns.nouns[randomInteger].toLowerCase().split('').filter((item, pos, self) => {return self.indexOf(item) == pos}),
           "attempts": 0,
           "lettersAttempted": [],
           "lettersCorrect": [] 
