@@ -18,6 +18,7 @@
   "homepage": "https://github.com/EliotChignell/LoungeBot#readme",
   "dependencies": {
     "better-sqlite-pool": "^0.2.0",
+    "colors": "^1.4.0",
     "dblapi.js": "^2.3.0",
     "discord.js": "^11.4.2",
     "enmap": "^4.7.0",
