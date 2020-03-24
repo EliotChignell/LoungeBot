@@ -1,5 +1,3 @@
-// LoungeBot
-
 // Libraries
 const Discord = require("discord.js");
 const Enmap = require("enmap");
@@ -7,6 +5,8 @@ const MyJSONAPI = require('myjson-api');
 const request = require('request');
 const pokedexPromiseV2 = require('pokedex-promise-v2');
 const DiscordBotList = require('dblapi.js');
+const fs = require("fs");
+const colors = require("colors");
 
 // Pokedex
 let pokedex = new pokedexPromiseV2();
@@ -32,7 +32,7 @@ let games = {
 let other = new Enmap({name:"other"});
 
 // Prefix 
-const prefix = "l;";
+const prefix = "k;";
 
 // Useful functions
 function randInt(a,b){return Math.floor((Math.random()*b)+a)}
@@ -45,372 +45,49 @@ let clientReady = false;
 
 // Client
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
 client.points = new Enmap({name: "points"});
 
+console.log("Step 1");
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+
+console.log("Step 2");
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.name, command);
+}
+
 client.once("ready", () => {
-  console.log("Ready!");
   clientReady = true;
-  client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
+  console.log(`[${"Startup".green}] ${client.user.tag} is ready!`);
+  client.user.setActivity("l;help");
 });
 
-client.on('message', async message => {
-  
-  if (!message.content.startsWith(prefix) || message.author.bot || !message.guild) return;
-  if (client.points.get("rewarded")) client.points.delete("rewarded");
-
-  if (!other.get("rewarded")) other.set("rewarded", []);
-
-  if (message.guild.me.hasPermission("MANAGE_NICKNAMES")) message.guild.me.setNickname('');
-
-  // Uploading help.json
-  MyJSONAPI.update('1d3p5k', require('./docs/help.json'));
+client.on("message", message => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
 
   client.points.ensure(message.author.id, {
     id: message.author.id,
-    points: 100
+    points: 0
   });
 
-  /*
-  let randomInteger = Math.floor((Math.random() * nouns.nouns.length-1) + 0);
-  games.hangman.ensure(message.author.id, {
-  	inGame: false,
-  	word: [],
-  	nonDuplicates: [],
-  	attempts: 0,
-  	lettersAttempted: [],
-  	lettersCorrect: []
-  });
-  */
-    
-  const args = message.content.slice(prefix.length).split(' ');
-  const command = args.shift().toLowerCase();
+  const args = message.content.slice(prefix.length).split(/ +/);
+  const commandName = args.shift().toLowerCase();
 
-  // Logging
-  console.log('['+message.author.tag+'] '+message.content); 
+  const command = client.commands.get(commandName)
+    || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-  // Embed Variables
-  let sendEmbed = false,
-      eTitle = "",
-      eDescription = "",
-      eThumbnail = "",
-      eImage = "",
-      user;
-  
-  switch(command) {
+  if (!command) return;
 
-    // Utility Commands
-    case 'help':
-      if (args[0]) {
-        for (var i in help) {
-          help[i].names.forEach(element => {
-            if (args[0].toLowerCase() == element) {
-              sendEmbed = true;
-              eTitle = "Help information on the command "+help[i].names[0];
-              eDescription = "Description: ```"+help[i].description+"```\n\
-                              Usage: ```"+help[i].usage+"```";
-            }
-          });
-        }
-      } else if (!args[0]) {
-        sendEmbed = true;
-        eTitle = "Help";
-        eDescription = "These are the commands/games that you can use/play:```prolog\nNormal Commands:\nhelp ping uptime bal board invite vote reward\n\nGames\n'Hangman': l;hangman start\n'Whos that Pokémon': l;pokemon```";
-      }
-      
-      break;
+  console.log(`[${colors.blue(message.author.tag)}] ${message.content}`);
 
-    case "uptime":
-      sendEmbed = true;
-      eTitle = "Uptime";
-      eDescription = "This session of LoungeBot has been online for\n```"+msToTime2(client.uptime)+"```";
-      break;
-
-    case 'ping':
-      const m = await message.channel.send("Ping?");
-      m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`);
-      break;
-
-    case 'balance':
-    case 'bal':
-    case 'money':
-    case 'credits':
-    case 'creds':
-      if (args[0]) {
-        if (!message.mentions.users.first()) return message.channel.send('Please mention someone...');
-        user = message.mentions.users.first() || client.users.get(args[0]);
-        if (!client.points.has(user.id)) return message.channel.send('This user does not exist on my database...');
-        sendEmbed = true;
-        eTitle = user.username+"'s Balance";
-        eDescription = client.points.get(user.id, 'points')+' credits';
-      } else {
-        sendEmbed = true;
-        eTitle = message.author.username+"'s Balance";
-        eDescription = client.points.get(message.author.id, 'points')+' credits';
-      }
-      break;
-
-    case 'vote':
-      sendEmbed = true;
-      eTitle = "Daily voting";
-      eDescription = "https://discordbots.org/bot/442184461405126656\nYou can get rewards for voting once every day!\nAfter voting, type `l;reward` to get your voting reward.";
-      break;
-
-    case 'reward':
-
-      break;
-
-    case 'yt':
-      request({
-      	uri: 'https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UC-lHJZR3Gqxm24_Vd_AJ5Yw&key='+secrets.youtube,
-      	json: true
-      }, (e,r,b) => {
-      	let pewds = parseInt(b.items[0].statistics.subscriberCount);
-      	console.log(pewds);
-      	request({ // UCq-Fj5jknLsUf-MWSy4_brA
-      	  uri: 'https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UCq-Fj5jknLsUf-MWSy4_brA&key='+secrets.youtube,
-      	  json: true
-      	}, (e,r,b) => {
-      		let tseries = parseInt(b.items[0].statistics.subscriberCount);
-      		console.log(tseries);
-      		sendEmbed = false;
-      		if (pewds > tseries) {
-      			return message.channel.send("PewDiePie is ahead by "+pewds-tseries+" subscribers");
-      		} else if (tseries > pewds) {
-      			return message.channel.send("T-Series is ahead by "+tseries-pewds+" subscribers");
-      		}
-      	})
-      });
-      break;
-    
-    case 'leaderboard':
-    case 'board':
-
-      if (args[0] || !message.guild) {
-        let sorted = client.points.array().sort((a, b) => a.points - b.points).reverse().splice(0,10);
-        console.log(sorted);
-        sendEmbed = false;
-        let rDescription = "The Worldwide Top 10:```diff\n";
-        /*for (const data of sorted) {
-          rDescription += "\n- "+client.users.get(parseInt(data.id)).tag+"\n+ "+data.points+" credits";
-        }*/
-        for (var i=0;i<sorted.length;i++) {
-          if (client.users.get(sorted[i].id)) rDescription += "\n- "+client.users.get(sorted[i].id).tag+"\n+ "+sorted[i].points+" credits";
-        }
-        rDescription += '```';
-        embed = new Discord.RichEmbed()
-          .setTitle("Credits Leaderboard")
-          .setAuthor("LoungeBot",client.user.displayAvatarURL)
-          .setColor(0x8E44AD)
-          .setDescription(rDescription)
-          .setFooter("l;[command]")
-          .setTimestamp();
-        
-        message.channel.send(embed);
-      } else if (!args[0] && message.guild) {
-        let foundUsers = [];
-        let guildIDs = [];
-        message.guild.members.forEach(member => {
-          if (client.points.has(member.id)) guildIDs.push(member.id);
-        });
-        let sorted = client.points.array().filter(p => guildIDs.includes(p.id)).sort((a, b) => a.points - b.points).reverse().splice(0,10);
-        let rDescription = "The Top 10 of the server `"+message.guild.name+"`:```diff\n";
-        for (const data of sorted) {
-          rDescription += "\n- "+client.users.get(data.id).tag+"\n+ "+data.points+" credits";
-        }
-        rDescription += '```\nType `l;board world` to find out the worldwide standings.';
-        sendEmbed = false;
-        embed = new Discord.RichEmbed()
-          .setTitle("Credits Leaderboard")
-          .setAuthor("LoungeBot",client.user.displayAvatarURL)
-          .setColor(0x8E44AD)
-          .setDescription(rDescription)
-          .setFooter("l;[command]")
-          .setTimestamp();
-        message.channel.send(embed);
-      }
-      break;
-
-    case 'info':
-      sendEmbed = true;
-      eTitle = "Information about LoungeBot";
-      eDescription = "This bot is:\nRunning on `"+client.guilds.size+"` servers,\nServing "+client.users.size+" users,\nAnd listening on `"+client.channels.size+"` channels.";
-      break;
-  
-    case 'invite':
-      message.channel.send('https://discordapp.com/oauth2/authorize?client_id=442184461405126656&permissions=469762048&scope=bot');
-      break;
-
-    // Games
-    case 'hangman':
-    case 'hang':
-    case 'hm':
-      if (!args[0] || args[0] == "start") { // Starting
-
-        // Setting the useful variables in the enmap
-        let randomInteger = randInt(0,nouns.nouns.length);
-        games.hangman.set(message.author.id, {
-          "inGame": true,
-          "word": nouns.nouns[randomInteger].toLowerCase().split(''),
-          "nonDuplicates": nouns.nouns[randomInteger].toLowerCase().split('').filter((item, pos, self) => {return self.indexOf(item) == pos}),
-          "attempts": 0,
-          "lettersAttempted": [],
-          "lettersCorrect": [] 
-        });
-
-        sendEmbed = true;
-        eTitle = "Hangman";
-        games.hangman.get(message.author.id, "word").forEach(a => {
-          eDescription += ":white_large_square:";
-        });
-
-        eDescription += "\n\nGuesses Left: "+(10-(games.hangman.get(message.author.id, "attempts")))+"\nLetters Wrong: "+games.hangman.get(message.author.id, "lettersAttempted");
-      } else if (args[0].length == 1) {
-        if (!letters.includes(args[0].toLowerCase())) return message.channel.send("Please specify a letter A-Z!");
-        
-        if (!games.hangman.get(message.author.id)) {
-          return message.channel.send("Please start a game using `l;hangman start`");
-        } else if (!games.hangman.get(message.author.id, "inGame")) {
-          return message.channel.send("Please start a game using `l;hangman start`");
-        }
-        
-        if (!games.hangman.get(message.author.id, "word").includes(args[0].toLowerCase())) { // Wrong
-          games.hangman.math(message.author.id, "+", 1, "attempts");
-
-          if (games.hangman.get(message.author.id, "attempts") > 9) { // Lost
-            games.hangman.set(message.author.id, false, "inGame");
-            sendEmbed = true;
-            eTitle = "Hangman";
-            eDescription = "You Lost!\nThe word was: "+games.hangman.get(message.author.id, "word").join('');
-            break;
-          }
-
-          games.hangman.push(message.author.id, args[0].toLowerCase(), "lettersAttempted");
-          sendEmbed = true;
-          eTitle = "Hangman";
-
-          games.hangman.get(message.author.id, "word").forEach(e => {
-            if (games.hangman.get(message.author.id, "lettersCorrect").includes(e)) {
-              eDescription += ":regional_indicator_"+e+":";
-            } else {
-              eDescription += ":white_large_square:";
-            }
-          });
-
-          eDescription += "\nYou were wrong!\nGuesses Left: "+(10-(games.hangman.get(message.author.id, "attempts")))+"\nLetters Wrong: "+games.hangman.get(message.author.id, "lettersAttempted");
-
-        } else if (games.hangman.get(message.author.id, "word").includes(args[0].toLowerCase())) { // Correct
-          
-          games.hangman.push(message.author.id, args[0].toLowerCase(), "lettersCorrect");
-          console.log(games.hangman.get(message.author.id, "nonDuplicates").length+" "+games.hangman.get(message.author.id, "lettersCorrect").length);
-          if (games.hangman.get(message.author.id, "nonDuplicates").length == games.hangman.get(message.author.id, "lettersCorrect").length) { // Won
-
-            games.hangman.set(message.author.id, false, "inGame");
-
-            sendEmbed = true;
-            eTitle = "Hangman";
-            eDescription = "You Won!\nThe word was: "+games.hangman.get(message.author.id, "word").join('')+"\nTherefore, you recieve "+50*games.hangman.get(message.author.id, "word").length+" credits!";
-            client.points.math(message.author.id, "+", 50*games.hangman.get(message.author.id, "word").length, "points");
-
-            break;
-          }
-
-          sendEmbed = true;
-          eTitle = "Hangman";
-          games.hangman.get(message.author.id, "word").forEach(e => {
-            if (games.hangman.get(message.author.id, "lettersCorrect").includes(e)) {
-              eDescription += ":regional_indicator_"+e+":";
-            } else {
-              eDescription += ":white_large_square:";
-            }
-          });
-
-          eDescription += "\nYou were right!\nGuesses Left: "+(10-(games.hangman.get(message.author.id, "attempts")))+"\nLetters Wrong: "+games.hangman.get(message.author.id, "lettersAttempted");
-        }
-      }
-      break;
-
-    
-    case 'pokemon':
-    case 'pokémon':
-    case 'poke':
-      if (!args[0]) {
-        pokedex.getPokemonByName(randInt(1,807), function(response, error) { // with callback
-          if(!error) {
-            games.pokemon.set(message.author.id, response.species.name);
-            
-            sendEmbed = false;
-            embed = new Discord.RichEmbed()
-              .setTitle("Who's That Pokémon, "+message.author.username+"?")
-              .setAuthor("LoungeBot",client.user.displayAvatarURL)
-              .setColor(0x8E44AD)
-              .setDescription("Guess by typing `l;pokemon [name]`.")
-              .setFooter("l;[command]")
-              .setImage(response.sprites.front_default)
-              .setTimestamp();
-            message.channel.send(embed);
-
-          } else {
-            console.log(error)
-          }
-        });
-      } else if (args[0]) {
-        let name = games.pokemon.get(message.author.id);
-        if (name == "dead") return message.channel.send("Please start a game using `l;pokemon`");
-        if (args[0].toLowerCase() == name) { // yes
-          let credsEarned = Math.floor(100+randInt(1,name.length));
-          client.points.math(message.author.id, "+", credsEarned, "points");
-          sendEmbed = true;
-          eTitle = "Who's that Pokémon, "+message.author.username+"?";
-          eDescription = "Good Job!\nYou recieved "+credsEarned+" credits!";
-        } else if (args[0].toLowerCase() != name) { // no
-          games.pokemon.set(message.author.id, "dead");
-          sendEmbed = true;
-          eTitle = "You were incorrect, "+message.author.username+"!";
-          eDescription = "oof\nThe Pokémon was: `"+name+"`";
-        }
-      }
-      break;
-    
-    /*
-    case 'tictactoe':
-      if (!args[0] || !message.mentions.users.first()) return message.channel.send("Please mention someone to challenge, e.g. `l;tictactoe @chig#4519`");
-      user = message.mentions.users.first();
-
-      tictactoe.set(message.author.id+" "+user.id, {
-        players: [message.author.id, user.id],
-        currentPlayer: message.author.id,
-        confirmed: false,
-        board: [0,0,0,0,0,0,0,0,0]
-      });
-
-      break;
-    */
-    
-    default:
-      sendEmbed = true;
-      eTitle = "Command not found";
-      eDescription = "Please use `l;help` to find out the available commands/games.";
-      break;
+  try {
+    command.execute(message, args, client);
+  } catch (error) {
+    console.error(error);
+    message.reply("[0] An error occured executing that command.");
   }
-
-  if (sendEmbed) {
-    let embed = new Discord.RichEmbed()
-      .setTitle(eTitle)
-      .setAuthor("LoungeBot",client.user.displayAvatarURL)
-      .setColor(0x8E44AD)
-      .setDescription(eDescription)
-      .setFooter("l;[command]")
-      .setImage(eImage)
-      .setThumbnail(eThumbnail)
-      .setTimestamp();
-      message.channel.send(embed);
-  }
-
 });
 
-setInterval(() => {
-  if (clientReady) client.user.setActivity('l;help | '+client.users.size+' users among '+client.guilds.size+' servers.', { type: 'LISTENING' });
-  dbl.postStats(client.guilds.size);
-}, 20000);
-
+console.log(`[${"Startup".green}] Main file running.`);
 client.login(secrets.token);

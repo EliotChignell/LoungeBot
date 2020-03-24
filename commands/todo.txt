@@ -1,5 +1,6 @@
 TODO
 - Implement all existing features
+- l;hm <word>
 - Add "l;gamble AMOUNT" with a long cooldown
 - Add tictactoe
 - Add connect4 

@@ -132,7 +132,7 @@ module.exports = {
           if (games.hangman.get(message.author.id, "nonDuplicates").length == games.hangman.get(message.author.id, "lettersCorrect").length) { // Won
 
             games.hangman.set(message.author.id, false, "inGame");
-            client.points.math(message.author.id, "+", 50*games.hangman.get(message.author.id, "word").length, "points");
+            client.points.math(message.author.id, "+", 500 - (games.hangman.get(message.author.id, "word").length * 10) + randInt(1,50), "points");
 
             let letterBlocks = "";
             games.hangman.get(message.author.id, "word").forEach(e => {
